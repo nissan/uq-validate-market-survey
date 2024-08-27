@@ -1,19 +1,18 @@
 import React, { useState } from 'react';
-import { parseSurveyQuestions } from '../lib/surveyParser';
 import { supabase } from '../lib/supabase';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Checkbox } from './ui/checkbox';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
-import { toast } from './ui/use-toast'; // Assuming you have a toast component
+import { toast } from './ui/use-toast';
 
 interface SurveyProps {
-  markdown: string;
+  surveyId: number;
+  questions: any[];
 }
 
-export function Survey({ markdown }: SurveyProps) {
-  const questions = parseSurveyQuestions(markdown);
+export function Survey({ surveyId, questions }: SurveyProps) {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [email, setEmail] = useState('');
@@ -30,37 +29,21 @@ export function Survey({ markdown }: SurveyProps) {
 
     setIsSubmitting(true);
     try {
-      console.log('Submitting survey with data:', { answers, email, name, can_contact: canContact });
-      
       const { data, error } = await supabase
         .from('survey_responses')
-        .insert({ answers, email, name, can_contact: canContact });
+        .insert({ survey_id: surveyId, answers, email, name, can_contact: canContact });
 
-      if (error) {
-        console.error('Error submitting survey:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to submit survey. Please try again.',
-          variant: 'destructive',
-        });
-      } else {
-        console.log('Survey submitted successfully:', data);
-        toast({
-          title: 'Success',
-          description: 'Survey submitted successfully!',
-        });
-        // Reset form
-        setAnswers({});
-        setEmail('');
-        setName('');
-        setCanContact(false);
-        setCurrentQuestion(0);
-      }
+      if (error) throw error;
+      toast({
+        title: 'Success',
+        description: 'Survey submitted successfully!',
+      });
+      window.location.href = '/';
     } catch (error) {
-      console.error('Unexpected error:', error);
+      console.error('Error submitting survey:', error);
       toast({
         title: 'Error',
-        description: 'An unexpected error occurred. Please try again.',
+        description: 'Failed to submit survey. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -70,64 +53,79 @@ export function Survey({ markdown }: SurveyProps) {
 
   const currentQ = questions[currentQuestion];
 
-  const isFormValid = () => {
-    return (
-      Object.keys(answers).length === questions.length &&
-      email.trim() !== '' &&
-      name.trim() !== ''
-    );
+  const renderQuestion = () => {
+    switch (currentQ.type) {
+      case 'text':
+        return (
+          <Input
+            type="text"
+            onChange={(e) => handleAnswer(currentQ.id, e.target.value)}
+            value={answers[currentQ.id] as string || ''}
+          />
+        );
+      case 'yesno':
+      case 'truefalse':
+        return (
+          <RadioGroup
+            onValueChange={(value) => handleAnswer(currentQ.id, value)}
+            value={answers[currentQ.id] as string}
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="yes" id="yes" />
+              <label htmlFor="yes">{currentQ.type === 'yesno' ? 'Yes' : 'True'}</label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="no" id="no" />
+              <label htmlFor="no">{currentQ.type === 'yesno' ? 'No' : 'False'}</label>
+            </div>
+          </RadioGroup>
+        );
+      case 'single':
+        return (
+          <RadioGroup
+            onValueChange={(value) => handleAnswer(currentQ.id, value)}
+            value={answers[currentQ.id] as string}
+          >
+            {currentQ.options.map((option: string) => (
+              <div key={option} className="flex items-center space-x-2">
+                <RadioGroupItem value={option} id={option} />
+                <label htmlFor={option}>{option}</label>
+              </div>
+            ))}
+          </RadioGroup>
+        );
+      case 'multiple':
+        return (
+          <div>
+            {currentQ.options.map((option: string) => (
+              <div key={option} className="flex items-center space-x-2">
+                <Checkbox
+                  id={option}
+                  checked={(answers[currentQ.id] as string[] || []).includes(option)}
+                  onCheckedChange={(checked) => {
+                    const newValue = checked
+                      ? [...(answers[currentQ.id] as string[] || []), option]
+                      : (answers[currentQ.id] as string[]).filter((v) => v !== option);
+                    handleAnswer(currentQ.id, newValue);
+                  }}
+                />
+                <label htmlFor={option}>{option}</label>
+              </div>
+            ))}
+          </div>
+        );
+      default:
+        return null;
+    }
   };
 
   return (
     <Card className="w-full max-w-lg mx-auto">
       <CardHeader>
-        <CardTitle>{currentQ ? `Question ${currentQuestion + 1}` : 'Contact Information'}</CardTitle>
+        <CardTitle>{currentQ ? currentQ.text : 'Contact Information'}</CardTitle>
       </CardHeader>
       <CardContent>
-        {currentQ ? (
-          <div>
-            <p className="mb-4">{currentQ.text}</p>
-            {currentQ.type === 'text' && (
-              <Input
-                type="text"
-                onChange={(e) => handleAnswer(currentQ.id, e.target.value)}
-                value={answers[currentQ.id] as string || ''}
-              />
-            )}
-            {currentQ.type === 'radio' && (
-              <RadioGroup
-                onValueChange={(value) => handleAnswer(currentQ.id, value)}
-                value={answers[currentQ.id] as string}
-              >
-                {currentQ.options?.map((option) => (
-                  <div key={option} className="flex items-center space-x-2">
-                    <RadioGroupItem value={option} id={option} />
-                    <label htmlFor={option}>{option}</label>
-                  </div>
-                ))}
-              </RadioGroup>
-            )}
-            {currentQ.type === 'checkbox' && (
-              <div>
-                {currentQ.options?.map((option) => (
-                  <div key={option} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={option}
-                      checked={(answers[currentQ.id] as string[] || []).includes(option)}
-                      onCheckedChange={(checked) => {
-                        const newValue = checked
-                          ? [...(answers[currentQ.id] as string[] || []), option]
-                          : (answers[currentQ.id] as string[]).filter((v) => v !== option);
-                        handleAnswer(currentQ.id, newValue);
-                      }}
-                    />
-                    <label htmlFor={option}>{option}</label>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        ) : (
+        {currentQ ? renderQuestion() : (
           <div className="space-y-4">
             <Input
               type="email"
@@ -163,7 +161,7 @@ export function Survey({ markdown }: SurveyProps) {
             Next
           </Button>
         ) : (
-          <Button onClick={handleSubmit} disabled={isSubmitting || !isFormValid()}>
+          <Button onClick={handleSubmit} disabled={isSubmitting}>
             {isSubmitting ? 'Submitting...' : 'Submit'}
           </Button>
         )}

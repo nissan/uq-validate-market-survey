@@ -1,0 +1,11 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { CreateSurvey } from '../components/CreateSurvey';
+---
+
+<Layout title="Create Survey">
+  <h1 class="text-4xl font-bold mb-8 text-center text-indigo-800">Create New Survey</h1>
+  <div class="max-w-2xl mx-auto">
+    <CreateSurvey client:load />
+  </div>
+</Layout>

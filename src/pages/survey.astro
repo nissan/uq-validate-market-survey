@@ -1,0 +1,34 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { Survey } from '../components/Survey';
+
+const surveyMarkdown = `
+## What is your favorite color?
+- Red
+- Blue
+- Green
+- Yellow
+
+## How often do you exercise?
+- Daily
+- 2-3 times a week
+- Once a week
+- Rarely
+
+## What are your hobbies?
+- Reading
+- Sports
+- Music
+- Travel
+- Cooking
+
+## Any additional comments?
+`;
+---
+
+<Layout title="Marketing Survey">
+  <main class="container mx-auto py-8">
+    <h1 class="text-3xl font-bold mb-8">Marketing Survey</h1>
+    <Survey client:load markdown={surveyMarkdown} />
+  </main>
+</Layout>
