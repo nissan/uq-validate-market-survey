@@ -10,8 +10,27 @@
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^4.14.5",
     "@astrojs/check": "^0.9.3",
+    "@astrojs/react": "^3.6.2",
+    "@astrojs/tailwind": "^5.1.0",
+    "@radix-ui/react-checkbox": "^1.1.1",
+    "@radix-ui/react-radio-group": "^1.2.0",
+    "@radix-ui/react-slot": "^1.1.0",
+    "@radix-ui/react-toast": "^1.2.1",
+    "@supabase/supabase-js": "^2.45.2",
+    "@types/react": "^18.3.4",
+    "@types/react-dom": "^18.3.0",
+    "astro": "^4.14.5",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.436.0",
+    "marked": "^14.1.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwind-merge": "^2.5.2",
+    "tailwindcss": "^3.4.10",
+    "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.5.4"
-  }
+  },
+  "packageManager": "pnpm@9.9.0+sha512.60c18acd138bff695d339be6ad13f7e936eea6745660d4cc4a776d5247c540d0edee1a563695c183a66eb917ef88f2b4feb1fc25f32a7adcadc7aaf3438e99c1"
 }

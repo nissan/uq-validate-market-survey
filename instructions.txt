@@ -1,0 +1,15 @@
+This will be a marketing survey application.
+
+The user will be asked a series of questions, and their answers will be used to generate a report.
+
+The user will be able to see the report and share it with others.
+
+The user will be able to see the report and share it with others.
+
+The series of questions will be displayed in a series of cards.
+
+The creator of the survey will have a markdown file that will be used to generate the questions and options for answers if the answer is not free form text.
+
+At the end of the survey the user will be asked for their email address and name to receive the report. There should be a checkbox that asks for permission to contact them for follow up.
+
+Create this application using Astro, Tailwind, ShadCN UI and saving the form submission to a Supabase database
